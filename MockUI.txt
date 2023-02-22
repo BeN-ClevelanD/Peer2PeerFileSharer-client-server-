@@ -1,0 +1,16 @@
+Public Folder:
+foo.txt
+Foo2.txt
+
+Private Folders:
+Mystery
+Mystery2
+
+Commands:
+action | file_type | key(if file is protected)
+
+Types of commands:
+Access private folder -> give key
+Download file
+Upload file
+

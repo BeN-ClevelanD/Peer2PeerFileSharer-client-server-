@@ -1,12 +1,15 @@
 import socket
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((socket.gethostbyname('localhost'), 1234))
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.connect((socket.gethostbyname('localhost'), 1234))
 
 full_msg = ''
 while True:
-    msg = s.recv(8)
+    msg = server_socket.recv(4092)
     if len(msg) <= 0:
         break
-    full_msg += msg.decode("utf-8")
-print(full_msg)
+    print(msg.decode())
+    command = input("Enter a command: ")
+    server_socket.send(bytes(command, "utf-8"))
+    msg = server_socket.recv(2048)
+    print (msg.decode())
