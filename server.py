@@ -6,6 +6,18 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((socket.gethostbyname('localhost'), 1234))
 public_dir = "../NetworksAssignmentOne/PublicFiles"
 
+#global variable that assumes the value of command given by user
+command = ""
+#global variable that assumes the value of the filename supplied by a user whilst uploading a file
+upload_file_name = ""
+#global variable that assumes the value of the filename supplied by a user whilst downloading a file
+download_file_name = ""
+#global variable that assumes the value of the key supplied by a user whilst uploading a protected file
+key = ""
+#global variable that assumes the value of the protected status of a user-uploaded file 
+protected_status = ""
+#global variable that assumes the value of the contents of a file that is uploaded by a user
+file_contents = ""
 
 def main():
     s.listen(5)
@@ -69,6 +81,27 @@ def mkdir(client_socket, path, key):
     file = open ("../NetworksAssignmentOne/Passwords.txt", "a")
     file.write(f"{path} {key}")
     show_ui(client_socket)
+
+
+
+def upload (client_socket,command ):
+    
+
+    client_socket.send(bytes("Upload command has been received... awaiting data transfer \n" + "Please note: no white space is permitted in access key or file name", "utf-8"))
+
+    dataTransfer =  str(client_socket.recv(2048).decode()).split()
+
+    upload_file_name = dataTransfer[0]
+    protected_status = dataTransfer[1]
+    key = dataTransfer[2]
+    file_contents = dataTransfer[3]
+
+    client_socket.send(bytes("File upload complete."))
+
+
+    #client_socket.send(bytes("Ending connection.", "utf-8"))
+    #command = str(client_socket.recv(2048).decode()).split()
+
 
 
 main()
