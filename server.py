@@ -58,13 +58,16 @@ def client_command(client_socket, command):
     elif string == "access":
         access(client_socket, command[1], command[2])
     elif string == "upload":
-        pass
+        upload(client_socket, string)
+        #command = str(client_socket.recv(2048).decode()).split()
+        #client_command(client_socket, command)
+        #client_socket.close()
     elif string == "download":
         pass
     elif string == "mkdir":
         mkdir(client_socket, command[1], command[2])
 
-
+#/NetworksAssignmentOne/PublicFiles'
 def access(client_socket, path, key):
     if exists(f"../NetworksAssignmentOne/{path}"):
         with open(f"../NetworksAssignmentOne/{path}") as file:
@@ -87,7 +90,7 @@ def mkdir(client_socket, path, key):
 def upload (client_socket,command ):
     
 
-    client_socket.send(bytes("Upload command has been received... awaiting data transfer \n" + "Please note: no white space is permitted in access key or file name", "utf-8"))
+    client_socket.send(bytes("ok", "utf-8"))
 
     dataTransfer =  str(client_socket.recv(2048).decode()).split()
 
@@ -96,8 +99,13 @@ def upload (client_socket,command ):
     key = dataTransfer[2]
     file_contents = dataTransfer[3]
 
-    client_socket.send(bytes("File upload complete."))
+    client_socket.send(bytes("File upload complete.", "utf-8"))
 
+    print(upload_file_name)
+    print(protected_status)
+    print(key)
+    print(file_contents)
+    
 
     #client_socket.send(bytes("Ending connection.", "utf-8"))
     #command = str(client_socket.recv(2048).decode()).split()
