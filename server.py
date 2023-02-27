@@ -3,54 +3,48 @@ from os import listdir, mkdir
 from os.path import isfile, join, exists, isdir
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostbyname('localhost'), 1234))
+s.bind((socket.gethostbyname('localhost'), 1235))
 public_dir = "../NetworksAssignmentOne/PublicFiles"
 
-#global variable that assumes the value of command given by user
+
+# global variable that assumes the value of command given by user
 command = ""
-#global variable that assumes the value of the filename supplied by a user whilst uploading a file
+# global variable that assumes the value of the filename supplied by a user whilst uploading a file
 upload_file_name = ""
-#global variable that assumes the value of the filename supplied by a user whilst downloading a file
+# global variable that assumes the value of the filename supplied by a user whilst downloading a file
 download_file_name = ""
-#global variable that assumes the value of the key supplied by a user whilst uploading a protected file
+# global variable that assumes the value of the key supplied by a user whilst uploading a protected file
 key = ""
-#global variable that assumes the value of the protected status of a user-uploaded file 
+# global variable that assumes the value of the protected status of a user-uploaded file
 protected_status = ""
-#global variable that assumes the value of the contents of a file that is uploaded by a user
+# global variable that assumes the value of the contents of a file that is uploaded by a user
 file_contents = ""
+
 
 def main():
     s.listen(5)
-    client_socket, address = s.accept()  
-    print(f"Connection from {address} has been established :)") 
+    client_socket, address = s.accept()
+    print(f"Connection from {address} has been established :)")
     with client_socket:
        print(f"Connection from {address} has been established :)")
-        
+
        while True:
-        #client_socket, address = s.accept()
-        #
-            #client_socket, address = s.accept()  
-            #print(f"Connection from {address} has been established :)") 
             show_ui(client_socket)
             command = str(client_socket.recv(2048).decode()).split()
             while(command[0] != "exit"):
                 client_command(client_socket, command)
                 command = str(client_socket.recv(2048).decode()).split()
 
-                if(command[0] == "exit"):
-                    client_socket.send(bytes("Ending connection.", "utf-8"))
-                    client_socket.close()
-
-        
-    
             #client_socket.close()
+            client_socket.send(bytes("Ending connection.", "utf-8"))
+            client_socket.close()
             client_socket, address = s.accept()
-        
+
 
 def show_ui(client_socket):
     public_files = [f for f in listdir(public_dir) if isfile(join(public_dir, f))]
     private_folders = [f for f in listdir(public_dir) if isdir(join(public_dir, f))]
-    client_socket.send(bytes("Available services - Command format: "
+    msg = (bytes("Available services - Command format: "
                              "\n-------------------------------------"
                              "\nUpload file - upload open/protected destination key(if protected)"
                              "\nDownload file - download filename"
@@ -60,11 +54,11 @@ def show_ui(client_socket):
                              "\n\nPublic files:\n---------------\n"
                              , "utf-8"))
     for f in public_files:
-        client_socket.send(bytes(f"{f}\n", "utf-8"))
-    client_socket.send(bytes("\nPrivate folders:\n-----------------\n", "utf-8"))
+        msg += (bytes(f"{f}\n", "utf-8"))
+    msg += (bytes("\nPrivate folders:\n-----------------\n", "utf-8"))
     for f in private_folders:
-        client_socket.send(bytes(f"{f}\n", "utf-8"))
-
+        msg += (bytes(f"{f}\n", "utf-8"))
+    client_socket.send(msg)
 
 def client_command(client_socket, command):
     string = command[0]
@@ -76,14 +70,14 @@ def client_command(client_socket, command):
         access(client_socket, command[1], command[2])
     elif string == "upload":
         upload(client_socket)
-        
+
         #command = str(client_socket.recv(2048).decode()).split()
         #client_command(client_socket, command)
         #client_socket.close()
     elif string == "download":
         pass
     elif string == "mkdir":
-        mkdir(client_socket, command[1], command[2])
+        make_dir(client_socket, command[1], command[2])
 
 #/NetworksAssignmentOne/PublicFiles'
 def access(client_socket, path, key):
@@ -97,16 +91,14 @@ def access(client_socket, path, key):
         client_socket.send(bytes("File given does not exist.", "utf-8"))
 
 
-def mkdir(client_socket, path, key):
-    mkdir(f"../NetworksAssignmentOne/{path}")
+def make_dir(client_socket, path, key):
+    mkdir(f"../NetworksAssignmentOne/PublicFiles/{path}")
     file = open ("../NetworksAssignmentOne/Passwords.txt", "a")
-    file.write(f"{path} {key}")
+    file.write(f"{path} {key}\n")
     show_ui(client_socket)
 
-
-
 def upload (client_socket ):
-    
+
 
     client_socket.send(bytes("ok", "utf-8"))
 
@@ -123,7 +115,7 @@ def upload (client_socket ):
     print(protected_status)
     print(key)
     print(file_contents)
-    
+
 
     #client_socket.send(bytes("Ending connection.", "utf-8"))
     #command = str(client_socket.recv(2048).decode()).split()
