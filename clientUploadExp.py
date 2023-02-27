@@ -12,45 +12,53 @@ def main():
          #   full_msg += msg
         print(msg.decode())
         command = input("Enter a command: ") # Command is given by client
-        server_socket.send(bytes(command, "utf-8"))
-        msg = server_socket.recv(4092) # Command response
-        returnedPhraser = msg.decode()
-        returnedPhrase = str(returnedPhraser)
-        print(returnedPhrase)
-        print(type(returnedPhrase))
-        shouldGet = "ok"
-        print(returnedPhrase == shouldGet)
-        print(type(shouldGet))
-        if shouldGet.__eq__(returnedPhrase):
-            print('s1 and s2 are equal.')
-        else:
-            print("NOPE")
-        #if(returnedPhrase == "Upload command has been received... awaiting data transfer \n" + "Please note: no white space is permitted in access key or file name"):
-        if(returnedPhrase):
-            print("YESSSSS")
-            uploadFileName = input("Enter file name:\n")
-            protectedStatus = input("Enter protected status of file:\n")
-            if(protectedStatus == "private"):
-                key = input("Enter private key:\n")
-            elif(protectedStatus == "public"):
-                key = "na"
-            else:
-                print("Please enter valid protected status: \"public\" or \"private\"")
-            
-
-            with open(uploadFileName, mode= "rb") as rf:
-                read_words = rf.read(2046)
-                if not read_words:
-                    break
-
-            textContent = read_words.decode()
-
-            dataPackage = uploadFileName + " " + protectedStatus + " " + key + " " + textContent
-
-            server_socket.send(bytes(dataPackage, "utf-8"))
 
         
-            server_socket.close()
+        server_socket.send(bytes(command, "utf-8"))
+        new_msg = server_socket.recv(4092) # Command response
+        returnedPhrase = new_msg.decode()
+        if(command == "upload"):
+            print("uploadTime")
+            upload(server_socket, returnedPhrase)
+        if(command == "exit"):
+             print("exitTime")
+             exit(1)
+             
+             #server_socket.close()
+        
+        
+        
+        #if(returnedPhrase == "Upload command has been received... awaiting data transfer \n" + "Please note: no white space is permitted in access key or file name"):
+def upload(server_socket, returnedPhrase):
+            #print("YESSSSS")
+    
+    print(returnedPhrase)
+    uploadFileName = input("Enter file name:\n")
+
+    with open(uploadFileName, mode= "rb") as rf:
+        read_words = rf.read(2046)
+        while( not read_words):
+            print("Please enter a valid file name")
+
+    protectedStatus = input("Enter protected status of file:\n")
+    if(protectedStatus == "private"):
+        key = input("Enter private key:\n")
+    elif(protectedStatus == "public"):
+                key = "na"
+    else:
+        print("Please enter valid protected status: \"public\" or \"private\"")
+            
+
+            
+
+    textContent = read_words.decode()
+
+    dataPackage = uploadFileName + " " + protectedStatus + " " + key + " " + textContent
+
+    server_socket.send(bytes(dataPackage, "utf-8"))
+
+        
+            #server_socket.close()
 
 
 main()

@@ -21,14 +21,31 @@ file_contents = ""
 
 def main():
     s.listen(5)
-    while True:
-        client_socket, address = s.accept()
-        print(f"Connection from {address} has been established :)")
-        show_ui(client_socket)
-        command = str(client_socket.recv(2048).decode()).split()
-        client_command(client_socket, command)
-        client_socket.close()
+    client_socket, address = s.accept()  
+    print(f"Connection from {address} has been established :)") 
+    with client_socket:
+       print(f"Connection from {address} has been established :)")
+        
+       while True:
+        #client_socket, address = s.accept()
+        #
+            #client_socket, address = s.accept()  
+            #print(f"Connection from {address} has been established :)") 
+            show_ui(client_socket)
+            command = str(client_socket.recv(2048).decode()).split()
+            while(command[0] != "exit"):
+                client_command(client_socket, command)
+                command = str(client_socket.recv(2048).decode()).split()
 
+                if(command[0] == "exit"):
+                    client_socket.send(bytes("Ending connection.", "utf-8"))
+                    client_socket.close()
+
+        
+    
+            #client_socket.close()
+            client_socket, address = s.accept()
+        
 
 def show_ui(client_socket):
     public_files = [f for f in listdir(public_dir) if isfile(join(public_dir, f))]
@@ -58,7 +75,8 @@ def client_command(client_socket, command):
     elif string == "access":
         access(client_socket, command[1], command[2])
     elif string == "upload":
-        upload(client_socket, string)
+        upload(client_socket)
+        
         #command = str(client_socket.recv(2048).decode()).split()
         #client_command(client_socket, command)
         #client_socket.close()
@@ -87,7 +105,7 @@ def mkdir(client_socket, path, key):
 
 
 
-def upload (client_socket,command ):
+def upload (client_socket ):
     
 
     client_socket.send(bytes("ok", "utf-8"))
