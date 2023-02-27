@@ -34,7 +34,7 @@ def show_ui(client_socket):
         client_socket.send(bytes(f"{f}\n", "utf-8"))
     client_socket.send(bytes("\nPrivate folders:\n-----------------\n", "utf-8"))
     for f in private_folders:
-        client_socket.send(bytes(f"{f}\n", "utf-8"))
+        client_socket.send(bytes(f"{f}\nENDMSG", "utf-8"))
 
 
 def client_command(client_socket, command):
