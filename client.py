@@ -15,8 +15,14 @@ def main():
     print(full_msg)
     command = input("Enter a command: ") # Command is given by client
     server_socket.send(bytes(command, "utf-8"))
-    msg = server_socket.recv(4092) # Command response
-    print(msg.decode())
+    response = server_socket.recv(1024).decode()
+    if command.split()[0] == "download" and response == "password ok":
+        server_socket.send(bytes("ok", "utf-8"))
+        file = open(f"{command.split()[1]}", "a")
+        file.write(server_socket.recv(4092).decode())
+        file.close()
+    else:
+        print(response)
     server_socket.close()
 
 

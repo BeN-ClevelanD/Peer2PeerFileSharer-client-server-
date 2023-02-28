@@ -35,7 +35,6 @@ def main():
                 client_command(client_socket, command)
                 command = str(client_socket.recv(2048).decode()).split()
 
-            #client_socket.close()
             client_socket.send(bytes("Ending connection.", "utf-8"))
             client_socket.close()
             client_socket, address = s.accept()
@@ -75,7 +74,7 @@ def client_command(client_socket, command):
         #client_command(client_socket, command)
         #client_socket.close()
     elif string == "download":
-        pass
+        download(client_socket, command[1], command[2])
     elif string == "mkdir":
         make_dir(client_socket, command[1], command[2])
 
@@ -120,6 +119,22 @@ def upload (client_socket ):
     #client_socket.send(bytes("Ending connection.", "utf-8"))
     #command = str(client_socket.recv(2048).decode()).split()
 
+def download(client_socket, path, key):
+    if exists(f"../NetworksAssignmentOne/PublicFiles/{path}"):
+        with open("../NetworksAssignmentOne/Passwords.txt") as passwords_file:
+            for line in passwords_file:
+                if line.split()[0] == path and line.split()[1] == key:
+                    with open(f"../NetworksAssignmentOne/PublicFiles/{path}") as requested_file:
+                        msg = ""
+                        client_socket.send(bytes("password ok", "utf-8"))
+                        for requested_line in requested_file:
+                            msg += requested_line
+                        client_socket.send(bytes(msg, "utf-8"))
+                        break
+                else:
+                    client_socket.send(bytes("Incorrect password, please try again.", "utf-8"))
+    else:
+        client_socket.send(bytes("Requested file path does not exist.", "utf-8"))
 
 
 main()
