@@ -30,21 +30,19 @@ def main():
         
         #if(returnedPhrase == "Upload command has been received... awaiting data transfer \n" + "Please note: no white space is permitted in access key or file name"):
 def upload(server_socket, returnedPhrase):
-            #print("YESSSSS")
-    
     print(returnedPhrase)
     uploadFileName = input("Enter file name:\n")
 
     with open(uploadFileName, mode= "rb") as rf:
         read_words = rf.read(2046)
-        while( not read_words):
+        if( not read_words):
             print("Please enter a valid file name")
 
     protectedStatus = input("Enter protected status of file:\n")
     if(protectedStatus == "private"):
         key = input("Enter private key:\n")
     elif(protectedStatus == "public"):
-                key = "na"
+        key = "na"
     else:
         print("Please enter valid protected status: \"public\" or \"private\"")
             
@@ -52,10 +50,15 @@ def upload(server_socket, returnedPhrase):
             
 
     textContent = read_words.decode()
+    #print(textContent)
 
     dataPackage = uploadFileName + " " + protectedStatus + " " + key + " " + textContent
+    #print(dataPackage)
 
     server_socket.send(bytes(dataPackage, "utf-8"))
+            #print("YESSSSS")
+   
+   
 
         
             #server_socket.close()

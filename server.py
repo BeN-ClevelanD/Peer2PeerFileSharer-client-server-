@@ -123,6 +123,15 @@ def upload (client_socket ):
     print(protected_status)
     print(key)
     print(file_contents)
+
+    with open(f"./PublicFiles/{upload_file_name}", "w") as fw:
+        
+
+        if not(file_contents):
+            exit(1)
+
+        fw.write(file_contents)
+
     
 
     #client_socket.send(bytes("Ending connection.", "utf-8"))
