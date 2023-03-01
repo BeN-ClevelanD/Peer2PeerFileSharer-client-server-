@@ -17,9 +17,10 @@ def main():
     server_socket.send(bytes(command, "utf-8"))
     response = server_socket.recv(1024).decode()
     if command.split()[0] == "download" and response == "password ok":
-        server_socket.send(bytes("ok", "utf-8"))
         file = open(f"{command.split()[1]}", "a")
         file.write(server_socket.recv(4092).decode())
+        file = open(f"{command.split()[1]}", "r")
+        print(file.read())
         file.close()
     else:
         print(response)

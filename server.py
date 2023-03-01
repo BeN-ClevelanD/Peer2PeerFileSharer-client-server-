@@ -41,22 +41,25 @@ def main():
 
 
 def show_ui(client_socket):
-    public_files = [f for f in listdir(public_dir) if isfile(join(public_dir, f))]
-    private_folders = [f for f in listdir(public_dir) if isdir(join(public_dir, f))]
+    public_files = []
+    with open("./Passwords.txt", "r") as files:
+        for line in files:
+            if line.split()[1] == "na":
+                public_files.append(line.split()[0])
     msg = (bytes("Available services - Command format: "
-                             "\n-------------------------------------"
-                             "\nUpload file - upload open/protected destination key(if protected)"
-                             "\nDownload file - download filename"
-                             "\nAccess private folder - access filename key"
-                             "\nCreate private folder - mkdir filename key"
-                             "\nExit - exit"
-                             "\n\nPublic files:\n---------------\n"
-                             , "utf-8"))
+                 "\n-------------------------------------"
+                 "\nUpload file - upload open/protected destination key(if protected)"
+                 "\nDownload file - download filename"
+                 "\nAccess private folder - access filename key"
+                 "\nCreate private folder - mkdir filename key"
+                 "\nExit - exit"
+                 "\n\nPublic files:\n---------------\n"
+                 , "utf-8"))
     for f in public_files:
         msg += (bytes(f"{f}\n", "utf-8"))
-    msg += (bytes("\nPrivate folders:\n-----------------\n", "utf-8"))
-    for f in private_folders:
-        msg += (bytes(f"{f}\n", "utf-8"))
+    # msg += (bytes("\nPrivate folders:\n-----------------\n", "utf-8"))
+    # for f in private_folders:
+    #     msg += (bytes(f"{f}\n", "utf-8"))
     client_socket.send(msg)
 
 def client_command(client_socket, command):
@@ -65,8 +68,8 @@ def client_command(client_socket, command):
     if string == "exit":
         client_socket.send(bytes("Ending connection.", "utf-8"))
         client_socket.close()
-    elif string == "access":
-        access(client_socket, command[1], command[2])
+    # elif string == "access":
+    #     access(client_socket, command[1], command[2])
     elif string == "upload":
         upload(client_socket)
 
@@ -75,26 +78,27 @@ def client_command(client_socket, command):
         #client_socket.close()
     elif string == "download":
         download(client_socket, command[1], command[2])
-    elif string == "mkdir":
-        make_dir(client_socket, command[1], command[2])
+    # elif string == "mkdir":
+    #     make_dir(client_socket, command[1], command[2])
 
 #/NetworksAssignmentOne/PublicFiles'
-def access(client_socket, path, key):
-    if exists(f"../NetworksAssignmentOne/{path}"):
-        with open(f"../NetworksAssignmentOne/{path}") as file:
-            for line in file:
-                if line.split()[0] == path and line.split()[1] == key:
-                    for f in listdir(f"../NetworksAssignmentOne/{path}"):
-                        client_socket.send(bytes(f"{f}\n", "utf-8"))
-    else:
-        client_socket.send(bytes("File given does not exist.", "utf-8"))
-
-
-def make_dir(client_socket, path, key):
-    mkdir(f"../NetworksAssignmentOne/PublicFiles/{path}")
-    file = open ("../NetworksAssignmentOne/Passwords.txt", "a")
-    file.write(f"{path} {key}\n")
-    show_ui(client_socket)
+# def access(client_socket, path, key):
+#     if exists(f"../NetworksAssignmentOne/{path}"):
+#         with open(f"../NetworksAssignmentOne/{path}") as file:
+#             for line in file:
+#                 if line.split()[0] == path and line.split()[1] == key:
+#                     for f in listdir(f"../NetworksAssignmentOne/{path}"):
+#                         client_socket.send(bytes(f"{f}\n", "utf-8"))
+#     else:
+#         client_socket.send(bytes("File given does not exist.", "utf-8"))
+#
+#
+# def make_dir(client_socket, path, key):
+#     mkdir(f"../NetworksAssignmentOne/PublicFiles/{path}")
+#     file = open ("../NetworksAssignmentOne/Passwords.txt", "a")
+#     file.write(f"{path} {key}\n")
+#     show_ui(client_socket)
+#
 
 def upload (client_socket ):
 
