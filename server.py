@@ -3,91 +3,63 @@ from os import listdir, mkdir
 from os.path import isfile, join, exists, isdir
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostbyname('localhost'), 1235))
+s.bind((socket.gethostbyname('localhost'), 12345))
 public_dir = "../NetworksAssignmentOne/PublicFiles"
 
 
-# global variable that assumes the value of command given by user
-command = ""
-# global variable that assumes the value of the filename supplied by a user whilst uploading a file
-upload_file_name = ""
-# global variable that assumes the value of the filename supplied by a user whilst downloading a file
-download_file_name = ""
-# global variable that assumes the value of the key supplied by a user whilst uploading a protected file
-key = ""
-# global variable that assumes the value of the protected status of a user-uploaded file
-protected_status = ""
-# global variable that assumes the value of the contents of a file that is uploaded by a user
-file_contents = ""
-
-
 def main():
-    s.listen(5)
-    client_socket, address = s.accept()
-    print(f"Connection from {address} has been established :)")
-    with client_socket:
-       print(f"Connection from {address} has been established :)")
-
-       while True:
-            show_ui(client_socket)
-            command = str(client_socket.recv(2048).decode()).split()
-            while(command[0] != "exit"):
+    while True:
+        s.listen(5)
+        client_socket, address = s.accept()
+        with client_socket:
+            print(f"Connection from {address} has been established :)")
+            while True:
+                client_socket.send(get_ui())
+                command = str(client_socket.recv(2048).decode()).split('-')
                 client_command(client_socket, command)
-                command = str(client_socket.recv(2048).decode()).split()
-
+                if command[0] == "exit":
+                    break
             client_socket.send(bytes("Ending connection.", "utf-8"))
             client_socket.close()
-            client_socket, address = s.accept()
 
 
-def show_ui(client_socket):
+def get_ui():
     public_files = []
     with open("./Passwords.txt", "r") as files:
         for line in files:
             if line.split()[1] == "na":
                 public_files.append(line.split()[0])
-    msg = (bytes("Available services - Command format: "
-                 "\n-------------------------------------"
-                 "\nUpload file - upload open/protected destination key(if protected)"
-                 "\nDownload file - download filename"
-                 "\nAccess private folder - access filename key"
-                 "\nCreate private folder - mkdir filename key"
-                 "\nExit - exit"
-                 "\n\nPublic files:\n---------------\n"
-                 , "utf-8"))
+    msg = bytes("Available services - Command format: "
+                "\n-------------------------------------"
+                "\nUpload file - upload-filename-key(\"na\" if public)"
+                "\nDownload file - download-filename-key(\"na\" if public)"
+                "\nExit - exit"
+                "\n\nPublic files:\n---------------\n", "utf-8")
     for f in public_files:
-        msg += (bytes(f"{f}\n", "utf-8"))
-    client_socket.send(msg)
+        msg += bytes(f"{f}\n", "utf-8")
+    return msg
+
 
 def client_command(client_socket, command):
     string = command[0]
-
-    if string == "exit":
-        client_socket.send(bytes("Ending connection.", "utf-8"))
-        client_socket.close()
-    elif string == "upload":
-        upload(client_socket)
+    if string == "upload":
+        upload(client_socket, command[1], command[2], command[3])
     elif string == "download":
         download(client_socket, command[1], command[2])
+    elif string == "exit":
+        pass
+    else:
+        client_socket.send(bytes("Unknown command. Please try again.", "utf-8"))
 
-def upload (client_socket ):
 
-
-    client_socket.send(bytes("ok", "utf-8"))
-
-    dataTransfer =  str(client_socket.recv(2048).decode()).split()
-
-    upload_file_name = dataTransfer[0]
-    protected_status = dataTransfer[1]
-    key = dataTransfer[2]
-    file_contents = dataTransfer[3]
-
+def upload(client_socket, upload_file_name, key, file_contents):
+    with open(f"./PublicFiles/{upload_file_name}", "w") as fw:
+        if not file_contents:
+            exit(1)
+        fw.write(file_contents)
+    with open("./Passwords.txt", "a") as pw:
+        pw.write(f"{upload_file_name} {key}\n")
     client_socket.send(bytes("File upload complete.", "utf-8"))
-
-    print(upload_file_name)
-    print(protected_status)
-    print(key)
-    print(file_contents)
 
 
 def download(client_socket, path, key):
