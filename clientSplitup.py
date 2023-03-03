@@ -20,6 +20,16 @@ def rec_until_file_done(connection):
             break
     return msg_grande
 
+def printout_user_UI():
+    print("User abilities: - (Use the format specified on the right hand side of the dash!): "
+                "\n--------------------------------------"
+                "\n->><<---->><<----<<>>---->><<---->><<-"
+                "\nUpload file - upload-filename-key(\"na\" if public)"
+                "\nDownload file - download-filename-key(\"na\" if public)"
+                "\nView available public files - display public files"
+                "\nExit - exit"
+                "\n--------------------------------------"
+                "\n->><<---->><<----<<>>---->><<---->><<-")
 
 
 
@@ -33,22 +43,25 @@ def main():
     msg = bytes(1)
     prev_msg = bytes(0)
     full_msg = ""
-    msg = rec_until_file_done(server_socket)  # Initial UI is sent from the server
-    full_msg = msg.decode()
-    print(full_msg)
+    print("Welcome to the File uploader/downloader interface\n"
+          "<---|><|---|><|---|><|---|><|---|><|---|><|--->")
+    printout_user_UI()
+    
     response = ""
     command = input("Enter a command: ")
     while True:
-        #msg = rec_until_file_done(server_socket)  # Initial UI is sent from the server
-        #full_msg = msg.decode()
-        #print(full_msg)
-      
+     
 
 
         
         if(command == "exit"):
             server_socket.send(command.encode())
+            print("Signing off")
             exit(1)
+        elif command == "display public files":
+            server_socket.send(command.encode())
+            recieve_public_files(server_socket)
+                
         
         elif command.split('-')[0] == "upload":
             uploader(command, server_socket)
@@ -56,17 +69,24 @@ def main():
         elif command.split('-')[0] == "download":
             
             server_socket.send(command.encode())
-            print("getting response below")
+            
      
             downloader(command, server_socket)
-        print("new command time")
+        
    
 
         command = input("Enter a command: ")
         
 
 
-        
+def recieve_public_files(server_socket):
+    print("\nFiles publicly available for download:\n")
+    response = server_socket.recv(2046).decode()
+    print(response)
+    print("\n---------------------------------")
+    printout_user_UI()
+    
+
 
 def uploader(command, server_socket):
 
@@ -75,8 +95,7 @@ def uploader(command, server_socket):
     command += msg
 
     commander = command.encode()
-    print("all ok so far")
-    print(type(commander))
+    
     
     with open(f"./{command.split('-')[1]}", "rb") as file:
                 
@@ -89,6 +108,7 @@ def uploader(command, server_socket):
     server_socket.send(commander)
     response = server_socket.recv(2046).decode()
     print(response)
+    printout_user_UI()
 
     
     
@@ -97,22 +117,25 @@ def uploader(command, server_socket):
 
 def downloader(command, server_socket):
     response = server_socket.recv(2046).decode()
-    print(response)
-    print("Later response repat")
-    print(response)
+    #print(response)
+   
+    
     if command.split("-")[0] == "download" and response == "password ok":
-        print("HAPPY TIMES")
+        
         downloadContent = rec_until_file_done(server_socket)
         filename = command.split("-")[1]
         file = open(f"{filename}", "wb")
-        print(len(downloadContent))
+        #print(len(downloadContent))
         if not downloadContent:
             exit(1)
         file.write(downloadContent)
         file.close()
+        print("Download successful")
+        printout_user_UI()
         
     else:
         print(response)
+        printout_user_UI()
         
 
 
