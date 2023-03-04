@@ -2,7 +2,7 @@ import socket
 import hashlib
 from os import listdir, mkdir
 from os.path import isfile, join, exists, isdir
-import thread
+import _thread
 import time
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,22 +28,24 @@ def main():
     while True:
         s.listen(5)
         client_socket, address = s.accept()
+        _thread.start_new_thread ( process_requests, (client_socket, address))
        
-        with client_socket:
-            print(f"Connection from {address} has been established :)")
-            while True:
+        
+
+
+def process_requests(client_socket, address):
+    with client_socket:
+        print(f"Connection from {address} has been established :)")
+        while True:
                                         
-                command = rec_until_file_done(client_socket).split(b'breaker')
-                header = command[0].decode().split("-") 
+            command = rec_until_file_done(client_socket).split(b'breaker')
+            header = command[0].decode().split("-") 
                
-                client_command(client_socket, command, header)
-                if command[0].decode() == "exit":
-                    break
-            client_socket.send(bytes("Ending connection.", "utf-8"))
-            client_socket.close()
-
-
-
+            client_command(client_socket, command, header)
+            if command[0].decode() == "exit":
+                break
+        client_socket.send(bytes("Ending connection.", "utf-8"))
+        client_socket.close()
 
 def client_command(client_socket, command, header):
     
