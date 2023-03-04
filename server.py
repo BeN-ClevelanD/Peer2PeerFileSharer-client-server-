@@ -7,7 +7,7 @@ s.bind((socket.gethostbyname('localhost'), 12345))
 public_dir = "../NetworksAssignmentOne/PublicFiles"
 
 def rec_until_file_done(sock):
-     # 4 KiB
+  
     msg_grande = b''
 
     bytez= 8192
@@ -25,7 +25,7 @@ def main():
     while True:
         s.listen(5)
         client_socket, address = s.accept()
-        #client_socket.send(get_ui())
+       
         with client_socket:
             print(f"Connection from {address} has been established :)")
             while True:
@@ -67,21 +67,31 @@ def get_public_files(client_socket):
                 public_files.append(line.split()[0])
     for f in public_files:
         msg += bytes(f"{f}\n", "utf-8")
-    client_socket.send(msg)
+    
+    if(len(public_files) == 0):
+        client_socket.send(bytes("No public files available", "utf-8"))
+    else:
+        client_socket.send(msg)
 
 
 
 def upload(client_socket, upload_file_name, key, file_contents):
-    with open(f"./PublicFiles/{upload_file_name}", "wb") as fw:
-        #print(len(file_contents))
-        if not file_contents:
-            exit(1)
-        fw.write(file_contents)
-    with open("./Passwords.txt", "a") as pw:
-        pw.write(f"{upload_file_name} {key}\n")
-        pw.close()
-    client_socket.send(bytes("File upload complete.", "utf-8"))
-
+    with open("./Passwords.txt", "r") as reader:
+      
+        if(not filename_check(reader, upload_file_name)):
+          
+            with open(f"./PublicFiles/{upload_file_name}", "wb") as fw:
+        
+        
+                if not file_contents:
+                    exit(1)
+                fw.write(file_contents)
+            with open("./Passwords.txt", "a") as pw:
+                pw.write(f"{upload_file_name} {key}\n")
+                pw.close()
+            client_socket.send(bytes("File upload complete.", "utf-8"))
+        else:
+            client_socket.send(bytes("Filename already in use", "utf-8"))
 
 
 
@@ -97,7 +107,7 @@ def download(client_socket, path, key):
                 foundFile = True
                 with open(f"../NetworksAssignmentOne/PublicFiles/{path}", "rb") as requested_file:
                     msg = requested_file.read()
-                    #print (len(msg))
+             
                         
                         
                     client_socket.send(msg)
@@ -115,9 +125,18 @@ def download(client_socket, path, key):
 
 def password_check(key, passwords_file, path ):
     for line in passwords_file:
+        
 
         if line.split()[0] == path and line.split()[1] == key:
             return True
+        
+def filename_check(passwords_file, path ):
+    for line in passwords_file:
+       
+
+        if line.split()[0] == path:
+            return True
+        
 
 
 main()

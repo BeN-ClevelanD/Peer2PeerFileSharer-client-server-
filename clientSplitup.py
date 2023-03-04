@@ -80,11 +80,16 @@ def main():
 
 
 def recieve_public_files(server_socket):
+
+
     print("\nFiles publicly available for download:\n")
     response = server_socket.recv(2046).decode()
-    print(response)
-    print("\n---------------------------------")
-    printout_user_UI()
+    if(response):
+        print(response)
+        print("\n---------------------------------")
+        printout_user_UI()
+    else:
+        print("There are no publicly available files at the moment :(")
     
 
 
@@ -107,7 +112,9 @@ def uploader(command, server_socket):
     
     server_socket.send(commander)
     response = server_socket.recv(2046).decode()
+    print("\n")
     print(response)
+    print("\n")
     printout_user_UI()
 
     
@@ -130,11 +137,15 @@ def downloader(command, server_socket):
             exit(1)
         file.write(downloadContent)
         file.close()
+        print("\n")
         print("Download successful")
+        print("\n")
         printout_user_UI()
         
     else:
+        print("\n")
         print(response)
+        print("\n")
         printout_user_UI()
         
 
