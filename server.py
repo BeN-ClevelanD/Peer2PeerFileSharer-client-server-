@@ -1,4 +1,5 @@
 import socket
+import hashlib
 from os import listdir, mkdir
 from os.path import isfile, join, exists, isdir
 
@@ -30,9 +31,9 @@ def main():
             print(f"Connection from {address} has been established :)")
             while True:
                                         
-                command = rec_until_file_done(client_socket).split(b'WANGO')
+                command = rec_until_file_done(client_socket).split(b'breaker')
                 header = command[0].decode().split("-") 
-                #print(header[0])
+               
                 client_command(client_socket, command, header)
                 if command[0].decode() == "exit":
                     break
@@ -45,7 +46,7 @@ def main():
 def client_command(client_socket, command, header):
     
     if header[0] == "upload":
-        upload(client_socket, header[1], header[2], command[1])
+        upload(client_socket, header[1], header[2], command[2], command[1].decode())
     elif header[0] == "download":
      
         download(client_socket, header[1], header[2])
@@ -75,27 +76,37 @@ def get_public_files(client_socket):
 
 
 
-def upload(client_socket, upload_file_name, key, file_contents):
-    with open("./Passwords.txt", "r") as reader:
-      
-        if(not filename_check(reader, upload_file_name)):
-          
-            with open(f"./PublicFiles/{upload_file_name}", "wb") as fw:
-        
-        
-                if not file_contents:
-                    exit(1)
-                fw.write(file_contents)
-            with open("./Passwords.txt", "a") as pw:
-                pw.write(f"{upload_file_name} {key}\n")
-                pw.close()
-            client_socket.send(bytes("File upload complete.", "utf-8"))
-        else:
-            client_socket.send(bytes("Filename already in use", "utf-8"))
+def upload(client_socket, upload_file_name, key, file_contents, incoming_hash):
+    server_local_hash = hashlib.blake2s(file_contents).hexdigest()
+    if(server_local_hash == incoming_hash):
 
+        with open("./Passwords.txt", "r") as reader:
+      
+            if(not filename_check(reader, upload_file_name)):
+          
+                with open(f"./PublicFiles/{upload_file_name}", "wb") as fw:
+        
+                
+                    
+
+
+                    if not file_contents:
+                        exit(1)
+                    fw.write(file_contents)
+                if(not filename_check(reader, upload_file_name)):
+                    with open("./Passwords.txt", "a") as pw:
+                        pw.write(f"{upload_file_name} {key}\n")
+                        pw.close()
+                client_socket.send(bytes("File upload complete.", "utf-8"))
+            else:
+                client_socket.send(bytes("Filename already in use", "utf-8"))
+    else:
+        client_socket.send(bytes("File contents is corrupt or has been tampered with. Please resubmit upload request.", "utf-8"))
 
 
 def download(client_socket, path, key):
+
+    breaker = "breaker"
   
     if exists(f"../NetworksAssignmentOne/PublicFiles/{path}"):
         with open("../NetworksAssignmentOne/Passwords.txt") as passwords_file:
@@ -107,10 +118,12 @@ def download(client_socket, path, key):
                 foundFile = True
                 with open(f"../NetworksAssignmentOne/PublicFiles/{path}", "rb") as requested_file:
                     msg = requested_file.read()
-             
+
+                    server_outgoing_hash = hashlib.blake2s(msg).hexdigest()
+
                         
-                        
-                    client_socket.send(msg)
+                    package = server_outgoing_hash.encode() + breaker.encode() + msg
+                    client_socket.send(package)
                     requested_file.close()
                     
                    
