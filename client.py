@@ -1,7 +1,6 @@
 import socket
 
-HEADER_SIZE = 10
-
+key = b'8\n\xfd\xc6\xee\xf8\xc6cv\xda\xee\x06-\t\xb0\xd7'
 
 # This function serves to execute the main functionality of the client-server architecture
 def main():
@@ -44,6 +43,18 @@ def main():
             print(response)
 
     server_socket.close()
+
+
+def encrypt(message, key):
+    cipher = AES.new(key, AES.MODE_CTR)
+    cipher_message = cipher.encrypt(message)
+    nonce = cipher.nonce  # Creating the initialization vector for the encryption
+    return cipher_message, nonce
+
+
+def decrypt(cipher_message, key, nonce):
+    decrypt_cipher = AES.new(key, AES.MODE_CBC, nonce=nonce)
+    return decrypt_cipher.decrypt(cipher_message)
 
 
 main()

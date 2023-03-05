@@ -1,8 +1,5 @@
 import socket
 
-HEADER_SIZE = 10
-
-
 # This function serves to execute the main functionality of the client-server architecture
 
 
@@ -30,11 +27,6 @@ def printout_user_UI():
                 "\nExit - exit"
                 "\n--------------------------------------"
                 "\n->><<---->><<----<<>>---->><<---->><<-")
-
-
-
-
-
 
 def main():
     alive = True
